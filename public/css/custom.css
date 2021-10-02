@@ -1,0 +1,30 @@
+header h1 { font-size: 20px; }
+.container {
+    left: 25%;right: 25%;
+}
+nav {
+    position: fixed;
+    bottom: 0px;left: 25%;right: 25%;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    line-height: 65px;
+    box-shadow: 1px 1px 10px 5px #ddd;
+    box-sizing: border-box;
+    padding: 0px 30px;
+}
+nav a { color: #444; }
+nav .item { margin: -2px; }
+nav .item.active {
+    background-color: #3498db;
+    color: #fff;
+    margin-top: -25px;
+    border-radius: 500px;
+}
+
+@media (max-width: 480px) {
+    nav {
+        left: 0%;right: 0%;
+        box-shadow: 1px 1px 5px 1px #ddd;
+    }
+    .container { left: 5%;right: 5%; }
+}

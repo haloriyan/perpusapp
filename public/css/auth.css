@@ -1,0 +1,26 @@
+body {
+    background-color: #fff;
+}
+
+a { color: #3498db; }
+
+.container {
+    position: absolute;
+    top: 90px;left: 30%;right: 30%;
+}
+.container h1 {
+    font-size: 35px;
+    margin-bottom: 55px;
+}
+
+@media (max-width: 720px) {
+    .container {
+        left: 10%;right: 10%;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        left: 5%;right: 5%;
+    }
+}

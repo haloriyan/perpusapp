@@ -1,0 +1,103 @@
+body { background-color: #fff; }
+
+header {
+    position: fixed;
+    top: 0px;left: 0px;right: 0px;
+    line-height: 70px;
+    background-color: #fff;
+    z-index: 2;
+}
+
+header h1 {
+    margin: 0px;
+    margin-left: 5%;
+    float: left;
+    font-size: 22px;
+    font-weight: RobotoBlack;
+    font-weight: bold;
+}
+
+header nav {
+    float: right;
+    margin-right: 5%;
+}
+header nav li {
+    list-style: none;
+    display: inline-block;
+    padding: 0px 25px;
+}
+header nav a { color: #666; }
+header nav li:hover {
+    color: #3498db;
+}
+header #toggleMenu {
+    display: none;
+}
+
+.container {
+    position: absolute;
+    top: 210px;left: 5%;right: 5%;
+}
+.container h2 {
+    font-size: 30px;
+    line-height: 45px;
+}
+
+.bottom {
+    position: absolute;
+    top: 100%;left: 0px;right: 0px;
+    background-color: #fff;
+    color: #444;
+}
+
+footer {
+    background-color: #2980b9;
+    color: #fff !important;
+    padding: 1px;
+}
+
+footer h3,footer a {
+    color: #fff;
+}
+footer h3 {
+    font-size: 27px;
+    font-family: RobotoBold;
+}
+footer li {
+    list-style: none;
+    line-height: 35px;
+}
+
+@media (max-width: 480px) {
+    header #toggleMenu {
+        display: block;
+        float: right;
+        margin-right: 5%;
+    }
+    header nav {
+        float: none;
+        margin: 0px;
+        position: fixed;
+        top: 70px;right: 0px;bottom: 0px;
+        width: 100%;
+        right: -150%;
+        transition: 0.4s;
+        background-color: #fff;
+    }
+    header nav li {
+        display: block;
+        line-height: 55px;
+    }
+    .container {
+        top: 140px;
+    }
+    .container h2 {
+        font-size: 22px;
+        line-height: 35px;
+    }
+    .container button {
+        width: 100% !important;
+        margin: 0px;
+        margin-top: 15px;
+    }
+}

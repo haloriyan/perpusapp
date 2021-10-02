@@ -1,0 +1,98 @@
+body {
+    background-color: #ecf0f1;
+}
+nav {
+    position: fixed;
+    top: 0px;left: 0px;bottom: 0px;
+    width: 25%;
+    background-color: #fff;
+}
+nav .profile {
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+nav .profile h2 { font-size: 22px; }
+nav .profile .logo {
+    width: 100px;
+    height: 100px;
+}
+nav .menu {
+    overflow: auto;
+    margin-top: 15px;
+    height: 420px;
+    padding-right: 10px;
+}
+nav .menu::-webkit-scrollbar { width: 6px; }
+nav .menu::-webkit-scrollbar-track { background-color: #eee; }
+nav .menu::-webkit-scrollbar-thumb {
+    background-color: #aaa;
+    border-radius: 26px;
+}
+nav .menu a { color: #444; }
+nav .menu li {
+    line-height: 60px;
+    list-style: none;
+    padding: 0px 25px;
+}
+nav .menu li div {
+    display: inline-block;
+}
+nav .menu li .icon {
+    width: 40px;
+}
+nav .menu li.active {
+    background-color: #3498db;
+    color: #fff;
+    border-radius: 6px;
+}
+
+.container {
+    position: absolute;
+    top: 60px;left: 30%;right: 5%;
+}
+
+@media (max-width: 480px) {
+    nav .menu li .text {
+        display: none;
+    }
+    nav .profile {
+        display: none;
+    }
+    .container {
+        left: 2.5%;right: 2.5%;
+        top: 25px;
+    }
+    .container h1 {
+        font-size: 20px;
+    }
+    nav {
+        z-index: 3;
+        top: auto;left: 0px;right: 0px;
+        width: 100%;
+        box-shadow: 1px -1px 5px 1px #ddd;
+    }
+    nav .menu {
+        overflow-x: scroll;
+        overflow-y: hidden;
+        height: 60px;
+        white-space: nowrap;
+        margin: 0;
+    }
+    nav > .wrap {
+        margin: 0% !important;
+    }
+    nav .menu li {
+        text-align: center;
+        display: inline-block;
+        vertical-align: top;
+        padding: 0px 15px;
+        margin: -2px;
+    }
+    nav .menu li .icon {
+        width: 38px;
+    }
+    nav .menu li.active {
+        background: none;
+        color: #3498db;
+    }
+}
