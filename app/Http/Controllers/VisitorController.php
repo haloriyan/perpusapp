@@ -72,7 +72,7 @@ class VisitorController extends Controller
         $datas = Chat::where([
             'visitor_id' => $visitorID
         ])
-        ->orderBy('created_at', 'DESC')->take(10)
+        ->orderBy('created_at', 'DESC')->take($request->limit)
         ->get();
         
         return response()->json([
@@ -145,7 +145,27 @@ class VisitorController extends Controller
                 $botMessage = "Maaf, saya tidak dapat menemukan buku ".implode(" ", $sentences);
             }
         } else if ($context == "unknown-question") {
-            $botMessage = "Maaf saya tidak tahu";
+            // Try search book
+            $book = BukuController::get([
+                ['judul', "LIKE", "%".implode(" ", $sentences)."%"]
+            ])->first();
+            if ($book != "") {
+                $interestedBook = $book->id;
+                $botMessage = "<b>".$book->judul."</b><br /><br />".$book->penulis."<br />".$book->penerbit."<br />".$book->tahun_terbit;
+            } else {
+                // Try search layanan
+                $layanan = LayananController::get([['name', "LIKE", "%".implode(' ', $sentences)."%"]])
+                ->orWhere('stemmed_name', "LIKE", "%".implode(' ', $sentences)."%")
+                ->first();
+                if ($layanan != "") {
+                    $interestedService = $layanan->id;
+                    $botMessage = "<b>$layanan->name </b><br /><br />";
+                    $botMessage .= "<pre class='teks-kecil'>$layanan->description</pre>";
+                } else {
+                    // Bot giving up
+                    $botMessage = "Maaf saya tidak tahu";
+                }
+            }
         } else if ($context == "available-service") {
             $jadwals = JadwalController::get()->get();
             $botMessage = "<b>Jadwal operasional perpustakaan</b><br /><br />";
@@ -164,7 +184,7 @@ class VisitorController extends Controller
             if ($layanan != "") {
                 $interestedService = $layanan->id;
                 $botMessage = "<b>Layanan $layanan->name </b><br /><br />";
-                $botMessage .= "<div class='teks-kecil'>$layanan->description</div>";
+                $botMessage .= "<pre class='teks-kecil'>$layanan->description</pre>";
             } else {
                 $botMessage = "Maaf, layanan ".implode(' ', $sentences)." tidak dapat kami temukan";
             }
@@ -196,7 +216,6 @@ class VisitorController extends Controller
         return response()->json([
             'data' => $sentence,
             'sentences' => implode("-", $sentences),
-            'toSave' => $toSaveVisitor,
             'context' => $context
         ]);
     }

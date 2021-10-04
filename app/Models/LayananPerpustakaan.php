@@ -10,6 +10,6 @@ class LayananPerpustakaan extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name','description'
+        'name','stemmed_name','description'
     ];
 }

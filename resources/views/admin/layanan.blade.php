@@ -57,7 +57,7 @@
                 <div class="mt-2">Nama Layanan :</div>
                 <input type="text" class="box" name="name" id="name" required>
                 <div class="mt-2">Deskripsi :</div>
-                <textarea name="description" id="description" class="box"></textarea>
+                <textarea name="description" id="description" class="box" required></textarea>
                 <button class="lebar-100 mt-3 biru">Tambahkan</button>
             </form>
         </div>

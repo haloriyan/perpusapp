@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LayananPerpustakaan as Layanan;
+use Sastrawi\Stemmer\StemmerFactory;
 use Illuminate\Http\Request;
 
 class LayananController extends Controller
@@ -14,8 +15,15 @@ class LayananController extends Controller
         return Layanan::where($filter);
     }
     public function store(Request $request) {
+        $stemmerFactory = new StemmerFactory();
+        $stemmer = $stemmerFactory->createStemmer();
+
+        $name = $request->name;
+        $stemmedName = $stemmer->stem($name);
+
         $saveData = Layanan::create([
-            'name' => $request->name,
+            'name' => $name,
+            'stemmed_name' => $stemmedName,
             'description' => $request->description,
         ]);
 

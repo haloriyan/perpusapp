@@ -63,7 +63,10 @@
             box-sizing: border-box;
             padding: 20px;
             border-radius: 6px;
-            margin-bottom: 20px;
+        }
+        .content .timestamp {
+            margin: 10px 0px;
+            font-size: 11px;
         }
         .content .message.mine {
             background-color: #3498db;
@@ -104,8 +107,8 @@
                 margin-top: 5px;
             }
             .content {
-                left: 5%;right: 5%;bottom: 100px;
-                top: 105px;
+                left: 5%;right: 5%;bottom: 80px;
+                top: 85px;
                 max-height: 550px;
             }
             .typingArea {
@@ -132,7 +135,9 @@
     </div>
 </div>
 
-<div class="content"></div>
+<div class="content">
+    <div id="render"></div>
+</div>
 
 <div class="typingArea">
     <form action="#" method="POST" id="type">
@@ -141,14 +146,22 @@
 </div>
 
 <script src="{{ asset('js/base.js') }}"></script>
+<script src="{{ asset('js/moment.min.js') }}"></script>
+<script src="{{ asset('js/moment-with-locales.min.js') }}"></script>
 <script>
     let state = {
         introductionMode: false,
         visitor: null,
+        conversationLimit: 25,
         token: localStorage.getItem('token')
     }
     let bot = {
         name: "{{ env('APP_NAME') }}"
+    }
+
+    const loadMore = () => {
+        state.conversationLimit += 15;
+        loadConversations(false);
     }
 
     const scrollChatToDown = () => {
@@ -163,11 +176,11 @@
                 ['class', 'message']
             ],
             html: `Halo kak, saya ${bot.name}. Sebelum kita mulai, boleh saya tahu namanya kakak?`,
-            createTo: '.content'
+            createTo: '.content #render'
         });
     }
 
-    const renderConversations = conversations => {
+    const renderConversations = (conversations, withScrollDown = true) => {
         conversations = conversations.reverse();
         if (conversations.length == 0) {
             createElement({
@@ -176,29 +189,46 @@
                     ['class', 'message']
                 ],
                 html: `Halo ${visitor.name}, ada yang bisa ${bot.name} bantu?`,
-                createTo: '.content'
+                createTo: '.content #render'
             });
             return false;
         }
 
 
-        select(".content").innerHTML = "";
+        select(".content #render").innerHTML = "";
+        
+        createElement({
+            el: 'div',
+            attributes: [
+                ['class', 'rata-tengah mt-1 mb-2']
+            ],
+            html: `<span class="teks-biru teks-tebal pointer" onclick="loadMore()">load more...</span>`,
+            createTo: '.content #render'
+        });
 
         conversations.forEach(item => {
             let classes = "message";
+            let timestampClasses = "teks-kecil timestamp";
             if (item.sent_by == "visitor") {
                 classes += " mine";
+                timestampClasses += " rata-kanan pr-1";
+            } else {
+                timestampClasses += " pl-1";
             }
             createElement({
                 el: 'div',
                 attributes: [
-                    ['class', classes]
+                    
                 ],
-                html: item.body,
-                createTo: '.content'
+                html: `<div class="${classes}">${item.body}</div>
+                <div class="${timestampClasses}">${moment(item.created_at).format('LT')}</div>`,
+                createTo: '.content #render'
             });
         });
-        scrollChatToDown();
+        
+        if (withScrollDown) {
+            scrollChatToDown();
+        }
     }
 
     const postConversation = (message, callback = null) => {
@@ -216,12 +246,13 @@
         })
     }
 
-    const loadConversations = () => {
+    const loadConversations = (withScrollDown = true) => {
         let getConversations = post("{{ route('api.conversation') }}", {
-            id: state.visitor.id
+            id: state.visitor.id,
+            limit: state.conversationLimit
         })
         .then(res => {
-            renderConversations(res.conversations);
+            renderConversations(res.conversations, withScrollDown);
         })
     }
 
