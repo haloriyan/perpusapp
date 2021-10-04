@@ -2,6 +2,10 @@
 
 @section('title', "Data Pengunjung")
 
+@section('head.dependencies')
+<link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+@endsection
+
 @php
     use Carbon\Carbon;
     Carbon::setLocale('id');
@@ -32,6 +36,10 @@
                 @endforeach
             </tbody>
         </table>
+
+        <div class="rata-tengah mt-4">
+            {{ $visitors->links() }}
+        </div>
     </div>
 </div>
 @endsection

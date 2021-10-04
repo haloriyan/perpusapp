@@ -2,6 +2,10 @@
 
 @section('title', "Data Buku")
 
+@section('head.dependencies')
+<link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+@endsection
+
 @section('header.action')
 <button class="biru" onclick="munculPopup('#addBuku')">
     <i class="fas fa-plus mr-1"></i> Buku Baru

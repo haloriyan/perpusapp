@@ -234,10 +234,11 @@
                 text: question
             })
             .then(res => {
-                // renderConversations(res.conversations);
-                loadConversations();
+                console.log(res);
                 state.introductionMode = false;
+                state.visitor = res.visitor;
                 localStorage.setItem('token', res.token);
+                loadConversations();
             });
         } else {
             postConversation(question);

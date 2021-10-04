@@ -26,12 +26,7 @@ class VisitorController extends Controller
         return view('index');
     }
     public function removeUnnecessary($sentences) {
-        $toRemove = [
-            "permisi","mau","tanya","halo","nggak","gak","ngga","ga","tidak","itu","anu",
-            "saya","anda","kamu","diri","situ","aku","pengen","ingin","aja","saja","mo","ada",
-            "tinggal","bagaimana","gimana","dapat","cara","info",
-            "apa"
-        ];
+        $toRemove = config('wordbank')['unnecessary'];
         return array_diff($sentences, $toRemove);
     }
     public function introduction(Request $request) {
@@ -59,13 +54,17 @@ class VisitorController extends Controller
             'body' => "Halo ".$name.", senang berkenalan dengan kamu. Sekarang apa yang bisa saya bantu?",
             'sent_by' => "bot"
         ]);
-
-        return response()->json([
+        
+        $toReturn = [
             'token' => $token,
+            'visitor' => $saveData,
             "conversations" => [
                 ["body" => "Halo ".$name.", senang berkenalan dengan kamu. Sekarang apa yang bisa saya bantu?"]
             ]
-        ]);
+        ];
+        $toReturn['visitor']['id'] = $saveData->id;
+
+        return response()->json($toReturn);
     }
     public function conversation(Request $request) {
         $visitorID = $request->id;
@@ -81,7 +80,7 @@ class VisitorController extends Controller
         ]);
     }
     public function removeConjunction($sentences) {
-        return array_diff($sentences, ["yang","kalau","terus","jika","maka"]);
+        return array_diff($sentences, config('wordbank')['conjunction']);
     }
     public function sendConversation(Request $request) {
         $stemmerFactory = new StemmerFactory();
@@ -93,12 +92,17 @@ class VisitorController extends Controller
         $sentences = explode(" ", $stemmedSentence);
         $sentences = $this->removeUnnecessary($sentences);
         $sentences = $this->removeConjunction($sentences);
-        $context = $botMessage = null;
+        $context = $botMessage = $interestedBook = $interestedService = null;
         $days = ["senin","selasa","rabu","kamis","jumat","sabtu","minggu"];
 
         if (in_array('buku', $sentences)) {
-            $context = "ask-book";
             $sentences = array_diff($sentences, ["apa","gimana","bagaimana","buku","info","tentang"]);
+            if (in_array('pinjam', $sentences)) {
+                $context = "borrow-book";
+                $sentences = array_diff($sentences, ["pinjam"]);
+            } else {
+                $context = "ask-book";
+            }
         } else if (in_array('layan', $sentences)) {
             if (in_array('jam', $sentences) || in_array('buka', $sentences) || in_array('tutup', $sentences) || in_array('berapa', $sentences)) {
                 $context = "available-service";
@@ -125,14 +129,23 @@ class VisitorController extends Controller
             $context = "unknown-question";
         }
 
-        if ($context == "ask-book") {
+        if ($context == "ask-book" || $context == "borrow-book") {
             $book = BukuController::get([
                 ['judul', "LIKE", "%".implode(" ", $sentences)."%"]
             ])->first();
 
-            $botMessage = "<b>".$book->judul."</b><br /><br />".$book->penulis."<br />".$book->penerbit."<br />".$book->tahun_terbit;
+            if ($book != "") {
+                $interestedBook = $book->id;
+                if ($context == "ask-book") {
+                    $botMessage = "<b>".$book->judul."</b><br /><br />".$book->penulis."<br />".$book->penerbit."<br />".$book->tahun_terbit;
+                } else {
+                    $botMessage = "Untuk meminjam buku <b><i>".$book->judul."</b></i>, Anda dapat langsung menuju perpustakaan";
+                }
+            } else {
+                $botMessage = "Maaf, saya tidak dapat menemukan buku ".implode(" ", $sentences);
+            }
         } else if ($context == "unknown-question") {
-            $botMessage = "Maaf saya ngga tau";
+            $botMessage = "Maaf saya tidak tahu";
         } else if ($context == "available-service") {
             $jadwals = JadwalController::get()->get();
             $botMessage = "<b>Jadwal operasional perpustakaan</b><br /><br />";
@@ -149,6 +162,7 @@ class VisitorController extends Controller
         } else if ($context == "ask-service") {
             $layanan = LayananController::get([['name', "LIKE", "%".implode(' ', $sentences)."%"]])->first();
             if ($layanan != "") {
+                $interestedService = $layanan->id;
                 $botMessage = "<b>Layanan $layanan->name </b><br /><br />";
                 $botMessage .= "<div class='teks-kecil'>$layanan->description</div>";
             } else {
@@ -156,12 +170,20 @@ class VisitorController extends Controller
             }
         }
 
-        $saveMessageVisitor = Chat::create([
+        $toSaveVisitor = [
             'visitor_id' => $visitor->id,
             'body' => $sentence,
             'sent_by' => "visitor",
             'processed_body' => $stemmedSentence
-        ]);
+        ];
+        if ($interestedBook != null) {
+            $toSaveVisitor['interested_book'] = $interestedBook;
+        }
+        if ($interestedService != null) {
+            $toSaveVisitor['interested_service'] = $interestedService;
+        }
+
+        $saveMessageVisitor = Chat::create($toSaveVisitor);
 
         sleep(1);
 
@@ -174,6 +196,7 @@ class VisitorController extends Controller
         return response()->json([
             'data' => $sentence,
             'sentences' => implode("-", $sentences),
+            'toSave' => $toSaveVisitor,
             'context' => $context
         ]);
     }

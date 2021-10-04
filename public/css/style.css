@@ -273,23 +273,6 @@ button.merah:hover { background-color: #c0392b; }
 
 a.oren { color: #f15b2d; }
 
-/* pagination */
-.page-item {
-    display: inline-block;
-    background-color: #0a5e6a;
-    color: #fff;
-    padding: 15px 20px;
-    border-radius: 90px;
-}
-.page-item a {
-    color: #fff;
-    text-decoration: none;
-}
-.page-item.active {
-    font-family: RobotoBold;
-    cursor: normal;
-}
-
 /* tabel */
 table {
     width: 100%;

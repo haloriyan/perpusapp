@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title') - {{ env('APP_NAME') }}</title>
+    @yield('head.dependencies')
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('fa/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
-    @yield('head.dependencies')
 </head>
 <body>
     
@@ -16,13 +16,15 @@
     $routeParameters = json_decode(json_encode($currentRoute->parameters), FALSE);
 @endphp
 
-<nav class="main-navigation">
-    <div class="header smallPadding rata-tengah">
-        <div class="wrap super">
-            <div class="icon mb-1">{{ $myData->initial }}</div>
-            <h2>{{ $myData->name }}</h2>
+<div class="main-navigation">
+    <a href="{{ route('admin.profile') }}">
+        <div class="header smallPadding rata-tengah">
+            <div class="wrap super">
+                <div class="icon mb-1">{{ $myData->initial }}</div>
+                <h2>{{ $myData->name }}</h2>
+            </div>
         </div>
-    </div>
+    </a>
     <ul>
         <a href="{{ route('admin.dashboard') }}">
             <li class="{{ $currentRoute->uri == 'admin/dashboard' ? 'active' : '' }}">
@@ -48,34 +50,28 @@
                 <div class="text">Jam Buka</div>
             </li>
         </a>
-        <a href="{{ route('admin.visitor') }}">
-            <li class="{{ $currentRoute->uri == 'admin/visitor' ? 'active' : '' }}">
-                <div class="icon"><i class="fas fa-users"></i></div>
-                <div class="text">Pengunjung</div>
-            </li>
-        </a>
-        {{-- <a href="#">
+        <a href="#">
             <li class="{{ $currentRoute->getPrefix() == 'admin/user' ? 'active' : '' }}">
                 <div class="icon"><i class="fas fa-users"></i></div>
                 <div class="text">Users
                     <i class="fas fa-angle-down"></i>
                 </div>
                 <ul>
-                    <a href="{{ route('admin.agent') }}">
-                        <li class="{{ Route::currentRouteName() == 'admin.agent' ? 'active' : '' }}">
-                            <div class="icon"><i class="fas fa-users"></i></div>
-                            <div class="text">Agents</div>
-                        </li>
-                    </a>
                     <a href="{{ route('admin.visitor') }}">
                         <li class="{{ Route::currentRouteName() == 'admin.visitor' ? 'active' : '' }}">
                             <div class="icon"><i class="fas fa-users"></i></div>
-                            <div class="text">Visitors</div>
+                            <div class="text">Pengunjung</div>
+                        </li>
+                    </a>
+                    <a href="{{ route('admin.admin') }}">
+                        <li class="{{ Route::currentRouteName() == 'admin.admin' ? 'active' : '' }}">
+                            <div class="icon"><i class="fas fa-users"></i></div>
+                            <div class="text">Admin</div>
                         </li>
                     </a>
                 </ul>
             </li>
-        </a> --}}
+        </a>
         <a href="{{ route('admin.logout') }}">
             <li class="{{ $currentRoute->uri == 'admin/logout' ? 'active' : '' }}">
                 <div class="icon"><i class="fas fa-sign-out-alt"></i></div>
@@ -83,9 +79,9 @@
             </li>
         </a>
     </ul>
-</nav>
+</div>
 
-<header>
+<header class="main">
     <h1>@yield('title')</h1>
     <div class="action">
         @yield('header.action')

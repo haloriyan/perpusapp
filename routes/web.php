@@ -10,7 +10,20 @@ Route::group(['prefix' => "admin"], function () {
     Route::get('logout', "AdminController@logout")->name('admin.logout');
     
     Route::get('dashboard', "AdminController@dashboard")->name('admin.dashboard')->middleware('Admin');
-    Route::get('visitor', "AdminController@visitor")->name('admin.visitor')->middleware('Admin');
+    Route::get('profile', "AdminController@profile")->name('admin.profile')->middleware('Admin');
+
+    Route::group(['prefix' => "user"], function () {
+        Route::get('visitor', "AdminController@visitor")->name('admin.visitor')->middleware('Admin');
+
+        Route::group(['prefix' => "admin"], function () {
+            Route::post('store', "AdminController@store")->name('admin.admin.store')->middleware('Admin');
+            Route::post('update', "AdminController@update")->name('admin.admin.update')->middleware('Admin');
+            Route::post('update-password', "AdminController@updatePassword")->name('admin.admin.updatePassword')->middleware('Admin');
+            Route::get('delete', "AdminController@delete")->name('admin.admin.delete')->middleware('Admin');
+            Route::get('/', "AdminController@admin")->name('admin.admin')->middleware('Admin');
+        });
+    });
+
     Route::group(['prefix' => "buku"], function () {
         Route::post('store', "BukuController@store")->name('admin.buku.store')->middleware('Admin');
         Route::post('update', "BukuController@update")->name('admin.buku.update')->middleware('Admin');

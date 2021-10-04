@@ -5,6 +5,12 @@
 @section('content')
 <h1 class="rata-tengah">Login Admin</h1>
 
+@if ($message != "")
+    <div class="bg-hijau-transparan rounded p-2 mb-3">
+        {{ $message }}
+    </div>
+@endif
+
 <form action="#" method="POST">
     {{ csrf_field() }}
     <div class="mt-2">Email :</div>

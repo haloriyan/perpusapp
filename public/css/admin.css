@@ -84,7 +84,7 @@ body {
     box-sizing: border-box;
 }
 
-header {
+header.main {
     position: fixed;
     top: 0px;left: 20%;right: 0px;
     line-height: 55px;
@@ -94,7 +94,7 @@ header {
     color: #1976d2;
     z-index: 2;
 }
-header h1 {
+header.main h1 {
     font-family: ProBold;
     margin: 0px;
     float: left;
@@ -102,11 +102,18 @@ header h1 {
     font-size: 18px;
     color: #1976d2;
 }
-header .action {
+header.main .action {
     float: right;
     margin-right: 5%;
 }
-header .action .count {
+header.main .action button {
+    padding-top: 0px;
+    margin-top: 0px;
+    height: 55px;
+    border-radius: 0px;
+    border:none;
+}
+header.main .action .count {
     margin-left: 5px;
     font-size: 15px;
 }
