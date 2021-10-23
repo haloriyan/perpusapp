@@ -153,11 +153,27 @@
         introductionMode: false,
         visitor: null,
         conversationLimit: 25,
+        lastActive: null,
+        minutesToReload: 2,
         token: localStorage.getItem('token')
     }
+    localStorage.clear();
     let bot = {
         name: "{{ env('APP_NAME') }}"
     }
+
+    setInterval(() => {
+        if (state.lastActive != null) {
+            let waktuA = state.lastActive;
+            let waktuB = moment();
+            let difference = waktuB.diff(waktuA, 'minutes');
+
+            if (difference == state.minutesToReload) {
+                localStorage.clear();
+                window.location.reload();
+            }
+        }
+    }, 1000);
 
     const loadMore = () => {
         state.conversationLimit += 15;
@@ -276,6 +292,7 @@
         }
 
         input.value = "";
+        state.lastActive = moment();
 
         e.preventDefault();
     }
