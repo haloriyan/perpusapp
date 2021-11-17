@@ -30,8 +30,16 @@ class VisitorController extends Controller
         return array_diff($sentences, $toRemove);
     }
     public function introduction(Request $request) {
-        $sentences = explode(" ", $request->text);
+        $stemmerFactory = new StemmerFactory();
+        $stemmer = $stemmerFactory->createStemmer();
+        $sentence = $request->text;
+        $stemmedSentence = $stemmer->stem($sentence);
+
+        
+        $sentences = explode(" ", $stemmedSentence);
         $name = $this->removeUnnecessary($sentences);
+        $name = $this->removeConjunction($name);
+        $name = array_diff($name, ["nama"]);
 
         $name = ucwords(implode(" ", $name));
         $token = Str::random(16);
@@ -90,16 +98,18 @@ class VisitorController extends Controller
         $sentence = $request->text;
         $stemmedSentence = $stemmer->stem($sentence);
         $sentences = explode(" ", $stemmedSentence);
-        $sentences = $this->removeUnnecessary($sentences);
-        $sentences = $this->removeConjunction($sentences);
-        $context = $botMessage = $interestedBook = $interestedService = null;
+        
+        $context = null;
+        $botMessage = "";
+        $interestedBook = null;
+        $interestedService = null;
+        
         $days = ["senin","selasa","rabu","kamis","jumat","sabtu","minggu"];
 
         if (in_array('buku', $sentences)) {
-            $sentences = array_diff($sentences, ["apa","gimana","bagaimana","buku","info","tentang"]);
+            $sentences = array_diff($sentences, ["apa","gimana","info","tentang"]);
             if (in_array('pinjam', $sentences)) {
                 $context = "borrow-book";
-                $sentences = array_diff($sentences, ["pinjam"]);
             } else {
                 $context = "ask-book";
             }
@@ -125,45 +135,62 @@ class VisitorController extends Controller
             }
             
             $sentences = array_diff($sentences, ["jam","buka","tutup","berapa"]);
+        } else if (in_array('hai', $sentences) || in_array('halo', $sentences) || in_array('selamat', $sentences)) {
+            $context = "greetings";
         } else {
             $context = "unknown-question";
         }
 
-        if ($context == "ask-book" || $context == "borrow-book") {
-            $book = BukuController::get([
-                ['judul', "LIKE", "%".implode(" ", $sentences)."%"]
-            ])->first();
+        if ($context == "greetings") {
+            $names = explode(" ", $visitor->name);
+            $botMessage = "Halo ".$names[0].", ada yang bisa saya bantu?";
+        }else if ($context == "ask-book" || $context == "borrow-book") {
+            $layanan = LayananController::get([['name', "LIKE", "%".implode(' ', $sentences)."%"]])
+            ->orWhere('stemmed_name', "LIKE", "%".implode(' ', $sentences)."%")
+            ->first();
 
-            if ($book != "") {
-                $interestedBook = $book->id;
-                if ($context == "ask-book") {
-                    $botMessage = "<b>".$book->judul."</b><br /><br />".$book->penulis."<br />".$book->penerbit."<br />".$book->tahun_terbit;
-                } else {
-                    $botMessage = "Untuk meminjam buku <b><i>".$book->judul."</b></i>, Anda dapat langsung menuju perpustakaan";
-                }
+            if ($layanan != "") {
+                $botMessage = $layanan->description;
             } else {
-                $botMessage = "Maaf, saya tidak dapat menemukan buku ".implode(" ", $sentences);
+                $book = BukuController::get([
+                    ['judul', "LIKE", "%".implode(" ", $sentences)."%"]
+                ])->first();
+    
+                if ($book != "") {
+                    $interestedBook = $book->id;
+                    if ($context == "ask-book") {
+                        $botMessage = "<b>".$book->judul."</b><br /><br />".$book->penulis."<br />".$book->penerbit."<br />".$book->tahun_terbit;
+                    } else {
+                        $botMessage = "Untuk meminjam buku <b><i>".$book->judul."</b></i>, Anda dapat langsung menuju perpustakaan";
+                    }
+                } else {
+                    $botMessage = "Maaf, saya tidak dapat menemukan buku ".implode(" ", $sentences);
+                }
             }
         } else if ($context == "unknown-question") {
             // Try search book
-            $book = BukuController::get([
-                ['judul', "LIKE", "%".implode(" ", $sentences)."%"]
-            ])->first();
-            if ($book != "") {
-                $interestedBook = $book->id;
-                $botMessage = "<b>".$book->judul."</b><br /><br />".$book->penulis."<br />".$book->penerbit."<br />".$book->tahun_terbit;
+            if (count($sentences) < 3) {
+                $botMessage = "Mohon maaf saya tidak mengetahui tentang hal itu, namun anda bisa mengontak pustakawan kami untuk mendapatkan informasi secara detail. Berikut adalah no kontak pustakawan UNAIR WA : +62 82231517409 atau Telp : +62 031 5030826";
             } else {
-                // Try search layanan
-                $layanan = LayananController::get([['name', "LIKE", "%".implode(' ', $sentences)."%"]])
-                ->orWhere('stemmed_name', "LIKE", "%".implode(' ', $sentences)."%")
-                ->first();
-                if ($layanan != "") {
-                    $interestedService = $layanan->id;
-                    $botMessage = "<b>$layanan->name </b><br /><br />";
-                    $botMessage .= "<pre class='teks-kecil'>$layanan->description</pre>";
+                $book = BukuController::get([
+                    ['judul', "LIKE", "%".implode(" ", $sentences)."%"]
+                ])->first();
+                if ($book != "") {
+                    $interestedBook = $book->id;
+                    $botMessage = "<b>".$book->judul."</b><br /><br />".$book->penulis."<br />".$book->penerbit."<br />".$book->tahun_terbit;
                 } else {
-                    // Bot giving up
-                    $botMessage = "Maaf saya tidak tahu";
+                    // Try search layanan
+                    $layanan = LayananController::get([['name', "LIKE", "%".implode(' ', $sentences)."%"]])
+                    ->orWhere('stemmed_name', "LIKE", "%".implode(' ', $sentences)."%")
+                    ->first();
+                    if ($layanan != "") {
+                        $interestedService = $layanan->id;
+                        $botMessage = "<b>$layanan->name </b><br /><br />";
+                        $botMessage .= "<pre class='teks-kecil'>$layanan->description</pre>";
+                    } else {
+                        // Bot giving up
+                        $botMessage = "Mohon maaf saya tidak mengetahui tentang hal itu, namun anda bisa mengontak pustakawan kami untuk mendapatkan informasi secara detail. Berikut adalah no kontak pustakawan UNAIR WA : +62 82231517409 atau Telp : +62 031 5030826";
+                    }
                 }
             }
         } else if ($context == "available-service") {
@@ -189,6 +216,9 @@ class VisitorController extends Controller
                 $botMessage = "Maaf, layanan ".implode(' ', $sentences)." tidak dapat kami temukan";
             }
         }
+
+        // $sentences = $this->removeUnnecessary($sentences);
+        // $sentences = $this->removeConjunction($sentences);
 
         $toSaveVisitor = [
             'visitor_id' => $visitor->id,

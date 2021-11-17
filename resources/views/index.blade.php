@@ -18,7 +18,7 @@
         }
         .typingArea {
             position: absolute;
-            bottom: 25px;
+            top: 600px;
             box-shadow: 1px 1px 5px 1px #ddd;
             border-radius: 600px;
         }
@@ -108,7 +108,7 @@
             }
             .content {
                 left: 5%;right: 5%;bottom: 80px;
-                top: 85px;
+                top: 100px;
                 max-height: 550px;
             }
             .typingArea {
@@ -162,15 +162,17 @@
         name: "{{ env('APP_NAME') }}"
     }
 
-    setInterval(() => {
+    let checking = setInterval(() => {
         if (state.lastActive != null) {
             let waktuA = state.lastActive;
             let waktuB = moment();
             let difference = waktuB.diff(waktuA, 'minutes');
 
             if (difference == state.minutesToReload) {
-                localStorage.clear();
-                window.location.reload();
+                console.log('ending chat...');
+                endChat();
+                scrollChatToDown();
+                // clearInterval(checking);
             }
         }
     }, 1000);
@@ -185,13 +187,27 @@
         contentArea.scrollTop = contentArea.scrollHeight;
     }
 
-    const introduction = () => {
+    const introduction = (introMessage = null) => {
+        if (introMessage == null) {
+            let timeNow = moment().format('h');
+            let greetingsTime = "";
+            if (timeNow >= 3 && timeNow < 11) {
+                greetingsTime = "pagi";
+            } else if (timeNow >= 11 && timeNow < 15) {
+                greetingsTime = "siang";
+            } else if (timeNow >= 15 && timeNow < 20) {
+                greetingsTime = "sore";
+            } else if (timeNow >= 20 || timeNow < 3) {
+                greetingsTime = "malam";
+            }
+            introMessage = `Selamat ${greetingsTime}. Boleh saya tahu nama kamu?`;
+        }
         createElement({
             el: 'div',
             attributes: [
                 ['class', 'message']
             ],
-            html: `Halo kak, saya ${bot.name}. Sebelum kita mulai, boleh saya tahu namanya kakak?`,
+            html: introMessage,
             createTo: '.content #render'
         });
     }
@@ -247,6 +263,10 @@
         }
     }
 
+    const endChat = () => {
+        localStorage.clear();
+        introduction("Terima kasih telah menghubungi perpustakaan UNAIR, sampai jumpa kembali. <a href='./'>Mulai ulang</a>");
+    }
     const postConversation = (message, callback = null) => {
         let req = post("{{ route('api.conversation.send') }}", {
             text: message,
