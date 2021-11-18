@@ -171,25 +171,26 @@ class VisitorController extends Controller
                 }
             }
         } else if ($context == "unknown-question") {
-            // Try search book
-            if (count($sentences) < 3) {
-                $botMessage = "Mohon maaf saya tidak mengetahui tentang hal itu, namun anda bisa mengontak pustakawan kami untuk mendapatkan informasi secara detail. Berikut adalah no kontak pustakawan UNAIR WA : +62 82231517409 atau Telp : +62 031 5030826";
+            // Try search layanan
+            $layanan = $layanan = LayananController::get([['name', "LIKE", "%".implode(' ', $sentences)."%"]])
+            ->orWhere('stemmed_name', "LIKE", "%".implode(' ', $sentences)."%")
+            ->first();
+
+            if ($layanan != "") {
+                $interestedService = $layanan->id;
+                $botMessage = "<b>$layanan->name </b><br /><br />";
+                $botMessage .= "<pre class='teks-kecil'>$layanan->description</pre>";
             } else {
-                $book = BukuController::get([
-                    ['judul', "LIKE", "%".implode(" ", $sentences)."%"]
-                ])->first();
-                if ($book != "") {
-                    $interestedBook = $book->id;
-                    $botMessage = "<b>".$book->judul."</b><br /><br />".$book->penulis."<br />".$book->penerbit."<br />".$book->tahun_terbit;
+                if (count($sentences) < 3) {
+                    $botMessage = "Mohon maaf saya tidak mengetahui tentang hal itu, namun anda bisa mengontak pustakawan kami untuk mendapatkan informasi secara detail. Berikut adalah no kontak pustakawan UNAIR WA : +62 82231517409 atau Telp : +62 031 5030826";
                 } else {
-                    // Try search layanan
-                    $layanan = LayananController::get([['name', "LIKE", "%".implode(' ', $sentences)."%"]])
-                    ->orWhere('stemmed_name', "LIKE", "%".implode(' ', $sentences)."%")
-                    ->first();
-                    if ($layanan != "") {
-                        $interestedService = $layanan->id;
-                        $botMessage = "<b>$layanan->name </b><br /><br />";
-                        $botMessage .= "<pre class='teks-kecil'>$layanan->description</pre>";
+                    $book = BukuController::get([
+                        ['judul', "LIKE", "%".implode(" ", $sentences)."%"]
+                    ])->first();
+
+                    if ($book != "") {
+                        $interestedBook = $book->id;
+                        $botMessage = "<b>".$book->judul."</b><br /><br />".$book->penulis."<br />".$book->penerbit."<br />".$book->tahun_terbit;
                     } else {
                         // Bot giving up
                         $botMessage = "Mohon maaf saya tidak mengetahui tentang hal itu, namun anda bisa mengontak pustakawan kami untuk mendapatkan informasi secara detail. Berikut adalah no kontak pustakawan UNAIR WA : +62 82231517409 atau Telp : +62 031 5030826";

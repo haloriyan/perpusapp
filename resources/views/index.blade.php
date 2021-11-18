@@ -268,6 +268,9 @@
         introduction("Terima kasih telah menghubungi perpustakaan UNAIR, sampai jumpa kembali. <a href='./'>Mulai ulang</a>");
     }
     const postConversation = (message, callback = null) => {
+        if (state.token == "") {
+            return false;
+        }
         let req = post("{{ route('api.conversation.send') }}", {
             text: message,
             visitorID: state.visitor.id
