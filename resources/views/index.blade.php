@@ -172,7 +172,7 @@
                 console.log('ending chat...');
                 endChat();
                 scrollChatToDown();
-                // clearInterval(checking);
+                clearInterval(checking);
             }
         }
     }, 1000);
@@ -189,7 +189,7 @@
 
     const introduction = (introMessage = null) => {
         if (introMessage == null) {
-            let timeNow = moment().format('h');
+            let timeNow = moment().format('H');
             let greetingsTime = "";
             if (timeNow >= 3 && timeNow < 11) {
                 greetingsTime = "pagi";

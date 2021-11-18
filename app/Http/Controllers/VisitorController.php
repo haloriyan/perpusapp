@@ -141,6 +141,9 @@ class VisitorController extends Controller
             $context = "unknown-question";
         }
 
+        $sentences = $this->removeUnnecessary($sentences);
+        $sentences = $this->removeConjunction($sentences);
+
         if ($context == "greetings") {
             $names = explode(" ", $visitor->name);
             $botMessage = "Halo ".$names[0].", ada yang bisa saya bantu?";
@@ -216,9 +219,6 @@ class VisitorController extends Controller
                 $botMessage = "Maaf, layanan ".implode(' ', $sentences)." tidak dapat kami temukan";
             }
         }
-
-        // $sentences = $this->removeUnnecessary($sentences);
-        // $sentences = $this->removeConjunction($sentences);
 
         $toSaveVisitor = [
             'visitor_id' => $visitor->id,
